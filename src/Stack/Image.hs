@@ -39,6 +39,7 @@ import           Stack.Types
 import           Stack.Types.Internal
 import           System.Directory
 import           System.IO.Temp
+import           System.FilePath (isPathSeparator)
 import           System.Process.Read
 
 stageExesInDir config pkgs dir = do
@@ -63,10 +64,6 @@ stageExesInDir config pkgs dir = do
                      (toFilePath
                           (binPath </> exePath)))
 
-
-createDockerImage config dir = do
-    let imgCfg = imgDocker (configImage config) :: Maybe ImageDockerOpts
-        imgBase = maybe Nothing imgDockerBase imgCfg :: Maybe String
 syncAddContentToDir config bconfig dir = do
     let imgAdd = maybe Map.empty imgDockerAdd (imgDocker (configImage config))
     dirPath <- parseAbsDir dir
@@ -89,6 +86,10 @@ syncAddContentToDir config bconfig dir = do
                           , toFilePath destFullPath]
                           ""))
 
+imageName = filter (not . isPathSeparator) . toFilePath . dirname . bcRoot
+
+createDockerImage config bconfig dir = do
+    let imgBase = maybe Nothing imgDockerBase (imgDocker (configImage config))
     case imgBase of
         Nothing -> throwM (StackImageException "nope")
         Just base -> do
@@ -101,7 +102,7 @@ syncAddContentToDir config bconfig dir = do
             void
                 (readProcess
                      "docker"
-                     ["build", "-t", "stack-docker:latest", dir]
+                     ["build", "-t", imageName bconfig, dir]
                      "")
 
 extendDockerImageWithEntrypoint config dir = do
@@ -125,9 +126,9 @@ image _dockerOptsMonoid = do
              "stack"
              (\dir ->
                    do stageExesInDir config pkgs dir
-                      createDockerImage config dir
                       extendDockerImageWithEntrypoint config dir))
                       syncAddContentToDir config bconfig dir
+                      createDockerImage config bconfig dir
 
 projectPkgs :: forall (m :: * -> *).
                (MonadLogger m, MonadCatch m, MonadIO m)
