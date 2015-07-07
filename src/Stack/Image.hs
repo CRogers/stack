@@ -32,6 +32,7 @@ import qualified Data.Text as T
 import           Data.Typeable (Typeable)
 import           Options.Applicative
 import           Path
+import           Path.IO
 import           Stack.Build.Source
 import           Stack.Package
 import           Stack.Types
