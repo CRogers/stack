@@ -63,15 +63,32 @@ stageExesInDir config pkgs dir = do
                      (toFilePath
                           (binPath </> exePath)))
 
-syncAddContentToDir config dir = return ()
-    -- TODO copy all the static content to the image staging area
-    -- let imgCfg = imgDocker (configImage config)
-    --     imgAdd = fmap imgDockerAdd imgCfg
-    -- return ()
 
 createDockerImage config dir = do
     let imgCfg = imgDocker (configImage config) :: Maybe ImageDockerOpts
         imgBase = maybe Nothing imgDockerBase imgCfg :: Maybe String
+syncAddContentToDir config bconfig dir = do
+    let imgAdd = maybe Map.empty imgDockerAdd (imgDocker (configImage config))
+    dirPath <- parseAbsDir dir
+    forM_
+        (Map.toList imgAdd)
+        (\(source,dest) ->
+              do sourcePath <- parseRelDir source
+                 destPath <- parseAbsDir dest
+                 let destFullPath = dirPath </> dropRoot destPath
+                 liftIO
+                     (createDirectoryIfMissing
+                          True
+                          (toFilePath destFullPath))
+                 void
+                     (readProcess
+                          "rsync"
+                          [ "-vac"
+                          , toFilePath
+                                (bcRoot bconfig </> sourcePath)
+                          , toFilePath destFullPath]
+                          ""))
+
     case imgBase of
         Nothing -> throwM (StackImageException "nope")
         Just base -> do
@@ -108,9 +125,9 @@ image _dockerOptsMonoid = do
              "stack"
              (\dir ->
                    do stageExesInDir config pkgs dir
-                      syncAddContentToDir config dir
                       createDockerImage config dir
                       extendDockerImageWithEntrypoint config dir))
+                      syncAddContentToDir config bconfig dir
 
 projectPkgs :: forall (m :: * -> *).
                (MonadLogger m, MonadCatch m, MonadIO m)
