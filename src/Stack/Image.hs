@@ -105,10 +105,34 @@ createDockerImage config bconfig dir = do
                      ["build", "-t", imageName bconfig, dir]
                      "")
 
-extendDockerImageWithEntrypoint config dir = do
-    -- mapM_ (\eps -> do return ()) <$> imgDockerEntrypoints <$> imgDocker (configImage config)
-    return ()
-    -- TODO extend the base imae for each entrypoint
+extendDockerImageWithEntrypoint config bconfig dir = do
+    let imgEntrypoints = maybe
+                Nothing
+                imgDockerEntrypoints
+                (imgDocker (configImage config))
+    case imgEntrypoints of
+        Nothing -> return ()
+        Just eps -> do
+            dirPath <- parseAbsDir dir
+            forM_
+                eps
+                (\ep ->
+                      do writeFile
+                             (toFilePath
+                                  (dirPath </>
+                                   $(mkRelFile "Dockerfile")))
+                             (unlines
+                                  [ "FROM " ++ imageName bconfig
+                                  , "ENTRYPOINT [\"/usr/local/bin/" ++ ep ++ "\"]"
+                                  , "CMD []" ])
+                         void
+                             (readProcess
+                                  "docker"
+                                  [ "build"
+                                  , "-t"
+                                  , imageName bconfig ++ "-" ++ ep
+                                  , dir]
+                                  ""))
 
 image :: forall env (m :: * -> *).
          (HasConfig env, HasEnvConfig env, HasBuildConfig env, HasTerminal env, MonadBaseControl IO m, MonadCatch m, MonadIO m, MonadLogger m, MonadReader env m)
@@ -126,9 +150,9 @@ image _dockerOptsMonoid = do
              "stack"
              (\dir ->
                    do stageExesInDir config pkgs dir
-                      extendDockerImageWithEntrypoint config dir))
                       syncAddContentToDir config bconfig dir
                       createDockerImage config bconfig dir
+                      extendDockerImageWithEntrypoint config bconfig dir))
 
 projectPkgs :: forall (m :: * -> *).
                (MonadLogger m, MonadCatch m, MonadIO m)
