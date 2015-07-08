@@ -127,15 +127,9 @@ syncAddContentToDir dir = do
                      (createDirectoryIfMissing
                           True
                           (toFilePath destFullPath))
-                 liftIO
-                     (void
-                          (readProcess
-                               "rsync"
-                               [ "-vac"
-                               , toFilePath
-                                     (bcRoot bconfig </> sourcePath)
-                               , toFilePath destFullPath]
-                               "")))
+                 copyDirectoryRecursive
+                     (bcRoot bconfig </> sourcePath)
+                     destFullPath)
 
 -- | Derive an image name from the project directory.
 imageName :: BuildConfig -> String
