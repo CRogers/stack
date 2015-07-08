@@ -24,7 +24,7 @@ import           Data.Maybe
 import           Data.Monoid
 import qualified Data.Set as Set
 import qualified Data.Text as T
-import           Data.Typeable (Typeable)
+import           Data.Typeable
 import           Options.Applicative
 import           Path
 import           Path.IO
@@ -35,7 +35,7 @@ import           Stack.Types.Internal
 import           System.Directory
 import           System.IO.Temp
 import           System.FilePath (isPathSeparator)
-import           System.Process.Read
+import           System.Process
 
 type M e m = (HasBuildConfig e, HasConfig e, HasEnvConfig e, HasTerminal e,
               MonadBaseControl IO m, MonadCatch m, MonadIO m, MonadLogger m,
@@ -151,11 +151,9 @@ createDockerImage dir = do
                              (dirPath </>
                               $(mkRelFile "Dockerfile")))
                         (unlines ["FROM " ++ base, "ADD ./ /"])
-                    void
-                        (readProcess
-                             "docker"
-                             ["build", "-t", imageName bconfig, dir]
-                             ""))
+                    callProcess
+                        "docker"
+                        ["build", "-t", imageName bconfig, dir])
 
 -- | Extend the general purpose docker image with entrypoints (if
 -- specified).
@@ -185,14 +183,12 @@ extendDockerImageWithEntrypoint dir = do
                                          ep ++ "\"]"
                                        , "CMD []"]))
                          liftIO
-                             (void
-                                  (readProcess
-                                       "docker"
-                                       [ "build"
-                                       , "-t"
-                                       , imageName bconfig ++ "-" ++ ep
-                                       , dir]
-                                       "")))
+                             (callProcess
+                                  "docker"
+                                  [ "build"
+                                  , "-t"
+                                  , imageName bconfig ++ "-" ++ ep
+                                  , dir]))
 
 -- | The command name for 'image'.
 imgCmdName :: String
