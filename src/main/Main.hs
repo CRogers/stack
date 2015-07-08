@@ -666,7 +666,10 @@ dockerCleanupCmd cleanupOpts go@GlobalOpts{..} = do
 
 imgDockerCmd :: () -> GlobalOpts -> IO ()
 imgDockerCmd () go@GlobalOpts{..} = do
-    withBuildConfig go ExecStrategy Image.imageDocker
+    withBuildConfig
+        go
+        ExecStrategy
+        (Docker.preventInContainer Image.imageDocker)
 
 -- | Command sum type for conditional arguments.
 data Command
