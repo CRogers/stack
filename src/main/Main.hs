@@ -235,7 +235,7 @@ main = withInterpreterArgs stackProgName $ \args isInterpreter ->
                (addCommand Image.imgDockerCmdName
                 "Build a Docker image for the project"
                 imgDockerCmd
-                Image.imgDockerOptsParser))
+                (pure ())))
              -- commandsFromPlugins plugins pluginShouldHaveRun) https://github.com/commercialhaskell/stack/issues/322
      case eGlobalRun of
        Left (exitCode :: ExitCode) -> do
@@ -663,8 +663,8 @@ dockerCleanupCmd cleanupOpts go@GlobalOpts{..} = do
         Docker.preventInContainer $
             Docker.cleanup cleanupOpts
 
-imgDockerCmd :: ImageDockerOptsMonoid -> GlobalOpts -> IO ()
-imgDockerCmd idom go@GlobalOpts{..} = do
+imgDockerCmd :: () -> GlobalOpts -> IO ()
+imgDockerCmd () go@GlobalOpts{..} = do
     withBuildConfig go ExecStrategy Image.imageDocker
 
 -- | Command sum type for conditional arguments.
