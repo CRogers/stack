@@ -10,14 +10,22 @@ import Data.Monoid
 import Data.Map (Map)
 import Data.Text (Text)
 
+-- | Image options. Currently only Docker image options.
 data ImageOpts = ImageOpts
     { imgDocker :: !(Maybe ImageDockerOpts)
+      -- ^ Maybe a section for docker image settings.
     } deriving (Show)
 
 data ImageDockerOpts = ImageDockerOpts
     { imgDockerBase :: !(Maybe String)
+      -- ^ Maybe have a docker base image name. (Although we will not
+      -- be able to create any Docker images without this.)
     , imgDockerEntrypoints :: !(Maybe [String])
+      -- ^ Maybe have a specific ENTRYPOINT list that will be used to
+      -- create images.
     , imgDockerAdd :: !(Map FilePath FilePath)
+      -- ^ Maybe have some static project content to include in a
+      -- specific directory in all the images.
     } deriving (Show)
 
 data ImageOptsMonoid = ImageOptsMonoid
