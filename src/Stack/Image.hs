@@ -7,7 +7,7 @@
 
 -- | This module builds Docker (OpenContainer) images.
 module Stack.Image
-       (image, imgCmdName, imgDockerCmdName, imgOptsFromMonoid,
+       (imageDocker, imgCmdName, imgDockerCmdName, imgOptsFromMonoid,
         imgDockerOptsFromMonoid, imgOptsParser, imgDockerOptsParser)
        where
 
@@ -47,8 +47,8 @@ type M e m = (HasBuildConfig e, HasConfig e, HasEnvConfig e, HasTerminal e,
 -- other specified files to `add`.  Then new image will be extended
 -- with an ENTRYPOINT specified for each `entrypoint` listed in the
 -- config file.
-image :: M e m => ImageDockerOptsMonoid -> m ()
-image _dockerOptsMonoid = do
+imageDocker :: M e m => m ()
+imageDocker = do
     tempDirFP <- liftIO getTemporaryDirectory
     bracket
         (liftIO (createTempDirectory tempDirFP "stack-image-docker"))
