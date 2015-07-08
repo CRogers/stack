@@ -19,6 +19,7 @@ import           Control.Monad.IO.Class
 import           Control.Monad.Logger
 import           Control.Monad.Reader
 import           Control.Monad.Trans.Control
+import           Data.Char (toLower)
 import qualified Data.Map.Strict as Map
 import           Data.Maybe
 import           Data.Monoid
@@ -133,7 +134,7 @@ syncAddContentToDir dir = do
 
 -- | Derive an image name from the project directory.
 imageName :: BuildConfig -> String
-imageName = filter (not . isPathSeparator) . toFilePath . dirname . bcRoot
+imageName = map toLower . filter (not . isPathSeparator) . toFilePath . dirname . bcRoot
 
 -- | Create a general purpose docker image from the temporary
 -- directory of executables & static content.
