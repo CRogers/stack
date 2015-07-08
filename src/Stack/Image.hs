@@ -201,7 +201,6 @@ imgDockerCmdName = "docker"
 -- | A parser for ImageOptsMonoid.
 imgOptsParser :: Parser ImageOptsMonoid
 imgOptsParser = ImageOptsMonoid <$>
-    pure Nothing <*>
     optional
         (subparser
              (command
@@ -211,7 +210,6 @@ imgOptsParser = ImageOptsMonoid <$>
 -- | A parser for ImageDockerOptsMonoid.
 imgDockerOptsParser :: Parser ImageDockerOptsMonoid
 imgDockerOptsParser = ImageDockerOptsMonoid <$>
-    pure Nothing <*>
     optional
         (option
              str

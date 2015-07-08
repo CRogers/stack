@@ -29,13 +29,11 @@ data ImageDockerOpts = ImageDockerOpts
     } deriving (Show)
 
 data ImageOptsMonoid = ImageOptsMonoid
-    { imgMonoidExists :: !(Maybe Bool)
-    , imgMonoidDocker :: !(Maybe ImageDockerOptsMonoid)
+    { imgMonoidDocker :: !(Maybe ImageDockerOptsMonoid)
     } deriving (Show)
 
 data ImageDockerOptsMonoid = ImageDockerOptsMonoid
-    { imgDockerMonoidExists :: !(Maybe Bool)
-    , imgDockerMonoidBase :: !(Maybe String)
+    { imgDockerMonoidBase :: !(Maybe String)
     , imgDockerMonoidEntrypoints :: !(Maybe [String])
     , imgDockerMonoidAdd :: !(Maybe (Map String FilePath))
     } deriving (Show)
@@ -44,9 +42,7 @@ instance FromJSON ImageOptsMonoid where
     parseJSON = withObject
             "ImageOptsMonoid"
             (\o ->
-                  do imgMonoidExists <-
-                         pure (Just True)
-                     imgMonoidDocker <- o .:? imgDockerArgName
+                  do imgMonoidDocker <- o .:? imgDockerArgName
                      return
                          ImageOptsMonoid
                          { ..
@@ -54,21 +50,17 @@ instance FromJSON ImageOptsMonoid where
 
 instance Monoid ImageOptsMonoid where
     mempty = ImageOptsMonoid
-        { imgMonoidExists = Just False
-        , imgMonoidDocker = Nothing
+        { imgMonoidDocker = Nothing
         }
     mappend l r = ImageOptsMonoid
-        { imgMonoidExists = imgMonoidExists l <|> imgMonoidExists r
-        , imgMonoidDocker = imgMonoidDocker l <|> imgMonoidDocker r
+        { imgMonoidDocker = imgMonoidDocker l <|> imgMonoidDocker r
         }
 
 instance FromJSON ImageDockerOptsMonoid where
     parseJSON = withObject
             "ImageDockerOptsMonoid"
             (\o ->
-                  do imgDockerMonoidExists <-
-                         pure (Just True)
-                     imgDockerMonoidBase <- o .:? imgDockerBaseArgName
+                  do imgDockerMonoidBase <- o .:? imgDockerBaseArgName
                      imgDockerMonoidEntrypoints <- o .:?
                                                    imgDockerEntrypointsArgName
                      imgDockerMonoidAdd <- o .:? imgDockerAddArgName
@@ -79,15 +71,12 @@ instance FromJSON ImageDockerOptsMonoid where
 
 instance Monoid ImageDockerOptsMonoid where
     mempty = ImageDockerOptsMonoid
-        { imgDockerMonoidExists = Just False
-        , imgDockerMonoidBase = Nothing
+        { imgDockerMonoidBase = Nothing
         , imgDockerMonoidEntrypoints = Nothing
         , imgDockerMonoidAdd = Nothing
         }
     mappend l r = ImageDockerOptsMonoid
-        { imgDockerMonoidExists = imgDockerMonoidExists l <|> imgDockerMonoidExists
-                                                                  r
-        , imgDockerMonoidBase = imgDockerMonoidBase l <|> imgDockerMonoidBase r
+        { imgDockerMonoidBase = imgDockerMonoidBase l <|> imgDockerMonoidBase r
         , imgDockerMonoidEntrypoints = imgDockerMonoidEntrypoints l <|> imgDockerMonoidEntrypoints
                                                                             r
         , imgDockerMonoidAdd = imgDockerMonoidAdd l <|> imgDockerMonoidAdd r
