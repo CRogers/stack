@@ -191,13 +191,13 @@ extendDockerImageWithEntrypoint dir = do
                                   , imageName bconfig ++ "-" ++ ep
                                   , dir]))
 
--- | The command name for 'image'.
+-- | The command name for dealing with images.
 imgCmdName :: String
 imgCmdName = "image"
 
--- | The command name for 'docker'.
+-- | The command name for building a docker container.
 imgDockerCmdName :: String
-imgDockerCmdName = "docker"
+imgDockerCmdName = "container"
 
 -- | A parser for ImageOptsMonoid.
 imgOptsParser :: Parser ImageOptsMonoid
